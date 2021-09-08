@@ -22,7 +22,7 @@ colours = {#    R   G   B
 HungryKnight ={
     "PlayerIcon": pygame.image.load("HK.png"),
     "HungerIcon": pygame.image.load("Hunger.png"),
-    "HungerLevel": 100,
+    "HungerLevel": 50,
     "HungerInterval":0,
     "HKX":400,
     "HKY":300,
@@ -36,7 +36,7 @@ HungryKnight ={
 #camera
 camrax = 0
 camray = 0
-CameraSlack = 90
+CameraSlack = 100
 
 GameOverMode = False
 
@@ -46,7 +46,7 @@ GameOverMode = False
 while True: # main game loop
     surface.fill(colours["green"])
     surface.blit(HungryKnight["HungerIcon"],(0,screeny-HungryKnight["HungerLevel"]))
-    
+    surface.blit(pygame.image.load("grass.png"),(300-camrax,300-camray))
     
     if HungryKnight["HungerInterval"] != fps/2:
         HungryKnight["HungerInterval"]+=1
@@ -58,13 +58,13 @@ while True: # main game loop
     playerx = HungryKnight["HKX"] + 25
     playery = HungryKnight["HKY"] + 25    
     if (camrax + screenx/2) - playerx > CameraSlack:
-        camrax = playerx + (CameraSlack - screenx/2)
-    elif playerx - (camrax - screenx/2) > CameraSlack:
-        camrax = playerx - (CameraSlack - screenx/2)
+        camrax = playerx + (CameraSlack - (screenx/2))
+    elif playerx - (camrax + screenx/2) > CameraSlack:
+        camrax = playerx - (CameraSlack + (screenx/2))
     if (camray + screeny/2) - playery > CameraSlack:
-        camray = playery + (CameraSlack - screeny/2)
-    elif playery - (camray - screeny/2) > CameraSlack:
-        camray = playery - (CameraSlack - screeny/2)
+        camray = playery + (CameraSlack - (screeny/2))
+    elif playery - (camray + screeny/2) > CameraSlack:
+        camray = playery - (CameraSlack + (screeny/2))
       
     for event in pygame.event.get():
         if event.type == QUIT:
