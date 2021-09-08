@@ -1,4 +1,4 @@
-import pygame, sys, time
+import pygame, sys, time, random
 from pygame.locals import *
 
 pygame.init()
@@ -8,8 +8,9 @@ fpsClock = pygame.time.Clock()
 
 screenx = 800
 screeny = 600
+
 surface = pygame.display.set_mode((screenx, screeny))
-pygame.display.set_caption('PyGameIntro')
+pygame.display.set_caption('Hungry Knight Clone')
 
 colours = {#    R   G   B
     "white" : (255,255,255),
@@ -21,7 +22,7 @@ colours = {#    R   G   B
 HungryKnight ={
     "PlayerIcon": pygame.image.load("HK.png"),
     "HungerIcon": pygame.image.load("Hunger.png"),
-    "HungerLevel": 50,
+    "HungerLevel": 100,
     "HungerInterval":0,
     "HKX":400,
     "HKY":300,
@@ -32,14 +33,21 @@ HungryKnight ={
     "MoveRight" : False
     }
 
+#camera
+camrax = 0
+camray = 0
+CameraSlack = 90
+
 GameOverMode = False
+
 
 
 
 while True: # main game loop
     surface.fill(colours["green"])
-    surface.blit(HungryKnight["PlayerIcon"],(HungryKnight["HKX"],HungryKnight["HKY"]))
     surface.blit(HungryKnight["HungerIcon"],(0,screeny-HungryKnight["HungerLevel"]))
+    
+    
     if HungryKnight["HungerInterval"] != fps/2:
         HungryKnight["HungerInterval"]+=1
     else:
@@ -47,7 +55,17 @@ while True: # main game loop
         HungryKnight["HungerLevel"]-=1
     if HungryKnight["HungerLevel"] == 0:
         GameOverMode = True
-        
+    playerx = HungryKnight["HKX"] + 25
+    playery = HungryKnight["HKY"] + 25    
+    if (camrax + screenx/2) - playerx > CameraSlack:
+        camrax = playerx + (CameraSlack - screenx/2)
+    elif playerx - (camrax - screenx/2) > CameraSlack:
+        camrax = playerx - (CameraSlack - screenx/2)
+    if (camray + screeny/2) - playery > CameraSlack:
+        camray = playery + (CameraSlack - screeny/2)
+    elif playery - (camray - screeny/2) > CameraSlack:
+        camray = playery - (CameraSlack - screeny/2)
+      
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
@@ -80,6 +98,7 @@ while True: # main game loop
                 terminate()
 
     if not GameOverMode:
+            surface.blit(HungryKnight["PlayerIcon"],(HungryKnight["HKX"]-camrax,HungryKnight["HKY"]-camray))
             if HungryKnight["MoveLeft"]:
                 HungryKnight["HKX"] -= HungryKnight["MoveRate"]
             if HungryKnight["MoveUp"]:
