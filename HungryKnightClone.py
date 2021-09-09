@@ -9,6 +9,8 @@ fpsClock = pygame.time.Clock()
 screenx = 800
 screeny = 600
 
+grassQuantity = 100
+
 surface = pygame.display.set_mode((screenx, screeny))
 pygame.display.set_caption('Hungry Knight Clone')
 
@@ -40,13 +42,37 @@ CameraSlack = 100
 
 GameOverMode = False
 
+GrassCollection=[]
 
+def getRandomOffCam(camerax, cameray, screenx, screeny,objwidth,objheight):
+    cameraRect = pygame.Rect(camerax, cameray, screenx, screeny)
+    while True:
+        x = random.randint(camerax - screenx, camerax+2*screenx)
+        y = random.randint(cameray - screeny, cameray+2*screeny)
+
+        objRect = pygame.Rect(x,y,objwidth,objheight)
+        if not objRect.colliderect(cameraRect):
+            return x,y
+class GrassObj:
+    def __init__(self,camrax, camray, screenx, screeny):
+        self.image = pygame.image.load("grass.png")
+        width = self.image.get_width()
+        height = self.image.get_height()
+        self.x , self.y = getRandomOffCam(camrax, camray, screenx, screeny, width,height)
+        rect = pygame.Rect(self.x,self.y,width,height)
+
+for i in range(1000):
+    GrassCollection.append("temp")
+    GrassCollection[i] = GrassObj(camrax, camray, screenx, screeny)
+
+    
 
 
 while True: # main game loop
     surface.fill(colours["green"])
     surface.blit(HungryKnight["HungerIcon"],(0,screeny-HungryKnight["HungerLevel"]))
-    surface.blit(pygame.image.load("grass.png"),(300-camrax,300-camray))
+    for i in range(len(GrassCollection)):
+        surface.blit(GrassCollection[i].image,(GrassCollection[i].x-camrax,GrassCollection[i].y-camray))
     
     if HungryKnight["HungerInterval"] != fps/2:
         HungryKnight["HungerInterval"]+=1
