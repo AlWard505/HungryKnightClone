@@ -9,7 +9,8 @@ fpsClock = pygame.time.Clock()
 screenx = 800
 screeny = 600
 
-grassQuantity = 100
+grassQuantity = 800
+BerryQuantity = 8
 
 surface = pygame.display.set_mode((screenx, screeny))
 pygame.display.set_caption('Hungry Knight Clone')
@@ -43,6 +44,7 @@ CameraSlack = 100
 GameOverMode = False
 
 GrassCollection=[]
+BerryCollection=[]
 
 def getRandomOffCam(camerax, cameray, screenx, screeny,objwidth,objheight):
     cameraRect = pygame.Rect(camerax, cameray, screenx, screeny)
@@ -53,34 +55,74 @@ def getRandomOffCam(camerax, cameray, screenx, screeny,objwidth,objheight):
         objRect = pygame.Rect(x,y,objwidth,objheight)
         if not objRect.colliderect(cameraRect):
             return x,y
+        
+def outsideactive(camerax, cameray, obj, screenx,screeny):
+    leftBound = camerax - screenx
+    topBound = cameray - screeny
+    boundsRect = pygame.Rect(leftBound,topBound, screenx*3, screeny*3)
+    objRect = pygame.Rect(obj.x,obj.y,obj.width, obj.height)
+    return not boundsRect.colliderect(objRect)
+
+def RefilHunger(player,quantity):
+    player["HungerLevel"]+= quantity
+    if player["HungerLevel"] > 50:
+        player["HungerLevel"] = 50
+    return player["HungerLevel"]
 class GrassObj:
     def __init__(self,camrax, camray, screenx, screeny):
         self.image = pygame.image.load("grass.png")
-        width = self.image.get_width()
-        height = self.image.get_height()
-        self.x , self.y = getRandomOffCam(camrax, camray, screenx, screeny, width,height)
-        rect = pygame.Rect(self.x,self.y,width,height)
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+        self.x , self.y = getRandomOffCam(camrax, camray, screenx, screeny, self.width,self.height)
+        rect = pygame.Rect(self.x,self.y,self.width,self.height)
 
-for i in range(1000):
+class BerryObj:
+    def __init__(self,camrax, camray, screenx, screeny):
+        self.image = pygame.image.load("Berry.png")
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+        self.x , self.y = getRandomOffCam(camrax, camray, screenx, screeny, self.width,self.height)
+
+for i in range(100):
     GrassCollection.append("temp")
     GrassCollection[i] = GrassObj(camrax, camray, screenx, screeny)
+    GrassCollection[i].x = random.randint(0,screenx)
+    GrassCollection[i].y = random.randint(0,screeny)
 
-    
-
+for i in range(3):
+    BerryCollection.append("temp")
+    BerryCollection[i] = BerryObj(camrax, camray, screenx, screeny)
+    BerryCollection[i].x = random.randint(0,screenx)
+    BerryCollection[i].y = random.randint(0,screeny)
 
 while True: # main game loop
     surface.fill(colours["green"])
-    surface.blit(HungryKnight["HungerIcon"],(0,screeny-HungryKnight["HungerLevel"]))
-    for i in range(len(GrassCollection)):
-        surface.blit(GrassCollection[i].image,(GrassCollection[i].x-camrax,GrassCollection[i].y-camray))
     
+    
+    while len(GrassCollection)<grassQuantity:
+        GrassCollection.append("temp")
+        GrassCollection[len(GrassCollection)-1] = GrassObj(camrax, camray, screenx, screeny)
+        
+    for i in range(len(GrassCollection)-1):
+        surface.blit(GrassCollection[i].image,(GrassCollection[i].x-camrax,GrassCollection[i].y-camray))
+
+    while len(BerryCollection)<BerryQuantity:
+        BerryCollection.append("temp")
+        BerryCollection[len(BerryCollection)-1] = BerryObj(camrax, camray, screenx, screeny)
+
+    for i in range(len(BerryCollection)-1):
+        surface.blit(BerryCollection[i].image,(BerryCollection[i].x-camrax,BerryCollection[i].y-camray))
+        
     if HungryKnight["HungerInterval"] != fps/2:
         HungryKnight["HungerInterval"]+=1
+        
     else:
         HungryKnight["HungerInterval"]=0
         HungryKnight["HungerLevel"]-=1
+        
     if HungryKnight["HungerLevel"] == 0:
         GameOverMode = True
+        
     playerx = HungryKnight["HKX"] + 25
     playery = HungryKnight["HKY"] + 25    
     if (camrax + screenx/2) - playerx > CameraSlack:
@@ -119,10 +161,17 @@ while True: # main game loop
                 HungryKnight["MoveUp"] = False
             elif event.key in (K_DOWN, K_s):
                 HungryKnight["MoveDown"] = False
+            elif event.key is (K_h):
+                HungryKnight["HungerLevel"] = RefilHunger(HungryKnight,10)
 
             elif event.key == K_ESCAPE:
                 terminate()
-
+    for i in range(len(GrassCollection)-1,-1,-1):
+        if outsideactive(camrax, camray, GrassCollection[i], screenx,screeny):
+            del GrassCollection[i]
+    for i in range(len(BerryCollection)-1,-1,-1):
+        if outsideactive(camrax, camray, BerryCollection[i], screenx,screeny):
+            del BerryCollection[i]
     if not GameOverMode:
             surface.blit(HungryKnight["PlayerIcon"],(HungryKnight["HKX"]-camrax,HungryKnight["HKY"]-camray))
             if HungryKnight["MoveLeft"]:
@@ -133,6 +182,6 @@ while True: # main game loop
                 HungryKnight["HKX"] += HungryKnight["MoveRate"]
             if HungryKnight["MoveDown"]:
                 HungryKnight["HKY"] += HungryKnight["MoveRate"]
-
+    surface.blit(HungryKnight["HungerIcon"],(0,screeny-HungryKnight["HungerLevel"]))
     fpsClock.tick(fps)
     pygame.display.update()
