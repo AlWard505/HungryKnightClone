@@ -10,7 +10,7 @@ screenx = 800
 screeny = 600
 
 grassQuantity = 800
-BerryQuantity = 8
+BerryQuantity = 14
 
 surface = pygame.display.set_mode((screenx, screeny))
 pygame.display.set_caption('Hungry Knight Clone')
@@ -82,7 +82,7 @@ class BerryObj:
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         self.x , self.y = getRandomOffCam(camrax, camray, screenx, screeny, self.width,self.height)
-
+        self.rectObj = self.image.get_rect(topleft = (self.x,self.y))
 for i in range(100):
     GrassCollection.append("temp")
     GrassCollection[i] = GrassObj(camrax, camray, screenx, screeny)
@@ -94,6 +94,7 @@ for i in range(3):
     BerryCollection[i] = BerryObj(camrax, camray, screenx, screeny)
     BerryCollection[i].x = random.randint(0,screenx)
     BerryCollection[i].y = random.randint(0,screeny)
+    BerryCollection[i].rectObj = pygame.Rect(BerryCollection[i].x,BerryCollection[i].y,BerryCollection[i].width,BerryCollection[i].height)
 
 while True: # main game loop
     surface.fill(colours["green"])
@@ -166,12 +167,6 @@ while True: # main game loop
 
             elif event.key == K_ESCAPE:
                 terminate()
-    for i in range(len(GrassCollection)-1,-1,-1):
-        if outsideactive(camrax, camray, GrassCollection[i], screenx,screeny):
-            del GrassCollection[i]
-    for i in range(len(BerryCollection)-1,-1,-1):
-        if outsideactive(camrax, camray, BerryCollection[i], screenx,screeny):
-            del BerryCollection[i]
     if not GameOverMode:
             surface.blit(HungryKnight["PlayerIcon"],(HungryKnight["HKX"]-camrax,HungryKnight["HKY"]-camray))
             if HungryKnight["MoveLeft"]:
@@ -182,6 +177,18 @@ while True: # main game loop
                 HungryKnight["HKX"] += HungryKnight["MoveRate"]
             if HungryKnight["MoveDown"]:
                 HungryKnight["HKY"] += HungryKnight["MoveRate"]
+                
+    for i in range(len(GrassCollection)-1,-1,-1):
+        if outsideactive(camrax, camray, GrassCollection[i], screenx,screeny):
+            del GrassCollection[i]
+    for i in range(len(BerryCollection)-1,-1,-1):
+        if outsideactive(camrax, camray, BerryCollection[i], screenx,screeny):
+            del BerryCollection[i]
+        
+    for i in range(len(BerryCollection)-1,-1,-1):
+       if ( BerryCollection[i].rectObj).colliderect(HungryKnight["PlayerIcon"].get_rect(topleft =(HungryKnight["HKX"],HungryKnight["HKY"]))):
+            del BerryCollection[i]
+            RefilHunger(HungryKnight,10)
     surface.blit(HungryKnight["HungerIcon"],(0,screeny-HungryKnight["HungerLevel"]))
     fpsClock.tick(fps)
     pygame.display.update()
